@@ -1,4 +1,26 @@
-{% extends 'index.html' %}
-{% block content %}
+{% extends 'index.html' %} {% block content %}
 <h1>Products List</h1>
+<table style="border-spacing:15px">
+  <thead style="padding: 10px; color: blue; font-weight: 500;font-size: 20px;">
+    <td>#</td>
+    <td>product name</td>
+    <td>product quantity</td>
+    <td>product seller</td>
+    <td>product price</td>
+    <td></td>
+  </thead>
+  <tbody>
+      {% for i in products %}
+    <tr>
+      <td>{{forloop.counter}}</td>
+      <td>{{i.product_name}}</td>
+      <td>{{i.product_quatity}} {{i.product_quantity_uom}}</td>
+      <td>{{i.product_seller}}</td>
+      <td>{{i.product_price}}</td>
+      <td>buy/sell</td>
+    
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 {% endblock %}
