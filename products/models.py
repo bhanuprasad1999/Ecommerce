@@ -7,7 +7,7 @@ class ProductQuantity(models.Model):
     quantity_uom = models.CharField(max_length=100)
 
     def __str__(self):
-        return f'{self.quantity_uom}'
+        return f'{self.quantity_id},{self.quantity_uom}'
 
 
 stock_status = (
