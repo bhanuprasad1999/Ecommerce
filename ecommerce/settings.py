@@ -24,9 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-%a#i_(svn4b^o$3sl1yn6090x1wh0ku0npxe*zh&heki6^5^4e'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', 'http://127.0.0.1:8000', '*']
 
 
 # Application definition
@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'drf_yasg',
+    "whitenoise.runserver_nostatic",
 
     # Apps
     'products.apps.ProductsConfig',
@@ -54,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",  
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -128,15 +130,19 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'staticfiles')
+]
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SWAGGER_SETTINGS = {
-    'SECURITY_DEFINITIONS':{
-        "Authorization Token in the format {'Bearer' 'TokenValue' 'LoggedInUserId'}":{
+    'SECURITY_DEFINITIONS': {
+        "Authorization Token in the format {'Bearer' 'TokenValue' 'LoggedInUserId'}": {
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"
