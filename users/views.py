@@ -12,17 +12,18 @@ import json
 # Registering the new users differentiated two type of users seller and buyer.
 
 
+@swagger_auto_schema(method='post', request_body=RegisterUserSerializer)
 @api_view(['POST'])
 def user_register(request):
     if request.method == 'POST':
-        if not User.objects.filter(username=request.data['username']).exists():
+        if not User.objects.filter(username=request.data['user']['username']).exists():
             user = User.objects.create(
-                username=request.data['username'],
+                username=request.data['user']['username'],
             )
-            user.set_password(request.data['password'])
+            user.set_password(request.data['user']['password'])
             user.save()
             profile = UserProfile.objects.create(
-                user=User.objects.get(username=request.data['username']),
+                user=User.objects.get(username=request.data['user']['username']),
                 user_type=request.data['user_type'],
                 address=request.data['address'],
                 phone_no=request.data['phone_no']
@@ -39,18 +40,18 @@ def user_login(request):
         user = authenticate(
             username=request.data['username'], password=request.data['password'])
         if user is not None:
-            Token.objects.create(user=User.objects.get(username=request.data['username'])).save()
-            token = Token.objects.get(user_id=User.objects.get(username=request.data['username']))
+            Token.objects.create(user=User.objects.get(
+                username=request.data['username'])).save()
+            token = Token.objects.get(user_id=User.objects.get(
+                username=request.data['username']))
             return JsonResponse({'data': json.loads(json.dumps(token, default=str)), 'message': 'successfully logged in!'})
-        else:
-            JsonResponse({'message': 'Please check the credentials!'})
+    else:
+        JsonResponse({'message': 'Please check the credentials!'})
 
 
 def token_authentication(auth1):
     def auth(*args, **kwargs):
         request = args[0]
-        print(request.META)
-        print(request.META['HTTP_AUTHORIZATION'].split(' ')[1])
         authorized = Token.objects.filter(
             key=request.META['HTTP_AUTHORIZATION'].split(' ')[1]).exists()
         if authorized:

@@ -8,7 +8,11 @@ from users.views import *
 
 # The method is for return all products on the platform.
 
+test_param = openapi.Parameter(
+    'id', openapi.IN_QUERY, description="test manual param", type=openapi.TYPE_STRING)
 
+@swagger_auto_schema(method='DELETE', manual_parameters=[test_param])
+@swagger_auto_schema(method='PUT',request_body=ProductSerializer ,manual_parameters=[test_param])
 @api_view(['GET', 'PUT', 'DELETE'])
 @token_authentication
 def api_product(request):
@@ -30,22 +34,41 @@ def api_product(request):
             if request.method == 'GET':
                 try:
                     product = Products.objects.filter(
-                        product_seller=request.GET['user_id'])
-                    serializer = ProductSerializer(products, many=True)
+                        product_seller=token_user)
+                    serializer = ProductSerializer(product, many=True)
                     return JsonResponse({'data': serializer.data})
-                except:
-                    return JsonResponse({'message': 'you haven\'t added any products for sale'})
+                except Exception as e:
+
+                    return JsonResponse({'message': f'you haven\'t added any products for sale {e}'})
 
             elif request.method == 'PUT':
-                product = Products.objects.get(product_id=request.GET['id'])
-                serializer = ProductSerializer(product, data=request.data)
-                if serializer.is_valid():
-                    serializer.save()
-                return JsonResponse({'data': 'Successfully updated the product details !'})
+                # For updating the products use only particular column name
+                try:
+                    product = Products.objects.get(product_seller=token_user,product_id=request.GET['id'])
+                    serializer = ProductSerializer(product,data= request.data, partial=True)
+                    if serializer.is_valid():
+                        print(serializer)
+                        serializer.save()
+                        return JsonResponse({'data': 'Successfully updated the product details !'})
+                    else:
+                        return JsonResponse({'message':'data is not updated'})
+                except Exception as e:
+                    return JsonResponse({'message':f'The {e}'})
+            elif request.method == 'DELETE':
+                try:
+                    
+                    product_name = Products.objects.get(
+                        product_id=request.GET['id']).product_name
+                    Products.objects.filter(
+                        product_id=request.GET['id']).delete()
+                    return JsonResponse({'message': f'deleted the product {product_name}'})
+                except Exception as e:
+                    return JsonResponse({'message': f"The product is not existed {e}"})
         else:
             return JsonResponse({'message': 'Check the type of User you have entered!'})
-    except:
-        return JsonResponse({'message': 'Authorization required!'})
+    except  Exception as e:
+        return JsonResponse({'message': f'Error: {e}'})
+
 
 # The method for the seller to the create the product...
 
@@ -74,12 +97,12 @@ def api_product_edit(request):
                     return JsonResponse({'message': 'Quantity does not exists!'})
         else:
             return JsonResponse({'message': 'Other than seller no user can create products or sell products'})
-    except:
-        return JsonResponse({'message': 'Authorization required!'})
+    except  Exception as e:
+        return JsonResponse({'message': f'Error: {e}'})
+
+
 
 # Add the different UOM Quantities
-
-
 @swagger_auto_schema(method='post', request_body=ProductQuantitySerializer)
 @api_view(['POST', 'GET'])
 def product_uom_quatity(request):
@@ -91,16 +114,18 @@ def product_uom_quatity(request):
         if user_type == 'seller':
             try:
                 if request.method == 'POST':
-                    serializer = ProductQuantitySerializer(request.data)
+                    serializer = ProductQuantitySerializer(data=request.data)
                     if serializer.is_valid():
                         serializer.save()
                     return JsonResponse({'message': 'Quantity is successfully added!'})
+                elif request.method == 'PUT':
+                    serializer = ProductQuantitySerializer()
                 elif request.method == 'GET':
                     data = ProductQuantity.objects.all()
                     serializer = ProductQuantitySerializer(data, many=True)
                     return JsonResponse({'data': serializer.data})
-            except:
-                return JsonResponse({'message': 'Something went wrong!'})
+            except Exception as e:
+                return JsonResponse({'message': f'Something went wrong!{e}'})
         else:
             return JsonResponse({'message': 'Only sellers are applicable!'})
     except:
@@ -108,6 +133,7 @@ def product_uom_quatity(request):
 
 
 # Add the product to the order.
+@swagger_auto_schema(method='post', request_body=OrderSerializer)
 @api_view(['POST'])
 def api_product_add_order(request):
     try:
@@ -132,7 +158,7 @@ def api_product_list_order(request):
     if user_type == 'seller':
         if request.method == 'GET':
             product_orders = Order.objects.filter(
-                product_id__product_seller='admin')
+                product_id__product_seller=token_user)
             serailizer = OrderSerializer(product_orders, many=True)
             return JsonResponse({'data': serailizer.data})
 

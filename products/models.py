@@ -33,5 +33,5 @@ class Order(models.Model):
     order_id = models.AutoField(primary_key=True)
     order_user = models.ForeignKey(
         User, on_delete=models.CASCADE, null=True, blank=True)
-    product_id = models.ForeignKey(Products, on_delete=models.DO_NOTHING)
+    product_id = models.ForeignKey(Products, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
