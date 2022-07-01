@@ -94,7 +94,7 @@ DATABASES = {
     # }
         'default': {
         'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'ecommerce',
+        'NAME': 'bhanu6789$ecommerce',
         'USER': 'bhanu6789',
         'PASSWORD': 'admin@753753',
         'HOST': 'bhanu6789.mysql.pythonanywhere-services.com',   # Or an IP Address that your DB is hosted on
